@@ -1,15 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-
-const DATE_STORAGE_KEY = "travel-book-confirmed-dates";
-const PLAN_STORAGE_KEY = "travel-book-daily-itinerary";
-const SETTINGS_STORAGE_KEY = "travel-book-trip-settings";
-
-type ConfirmedDates = { label: string; start: string; end: string };
-type DailyActivity = { id: number; time: string; title: string; note: string };
-type DailyPlan = Record<string, DailyActivity[]>;
-type TripSettings = { name: string; destination: string; leader: string; inviteEnabled: boolean; inviteCode: string };
+import { readStorage, writeStorage } from "@/lib/storage";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
+import type { ConfirmedDates, DailyPlan, TripSettings } from "@/types/trip";
 
 function getDayCount(start: string, end: string) {
   const startDate = new Date(`${start}T00:00:00`);
@@ -17,22 +11,12 @@ function getDayCount(start: string, end: string) {
   return Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1);
 }
 
-function readJson<T>(key: string): T | null {
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? JSON.parse(raw) as T : null;
-  } catch {
-    window.localStorage.removeItem(key);
-    return null;
-  }
-}
-
 export default function ConfirmedDateBridge() {
   useEffect(() => {
     if (window.location.pathname !== "/") return;
 
-    const confirmed = readJson<ConfirmedDates>(DATE_STORAGE_KEY);
-    const settings = readJson<TripSettings>(SETTINGS_STORAGE_KEY);
+    const confirmed = readStorage<ConfirmedDates | null>(STORAGE_KEYS.confirmedDates, null);
+    const settings = readStorage<TripSettings | null>(STORAGE_KEYS.tripSettings, null);
 
     function connectMainRoutes() {
       document.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
@@ -45,8 +29,7 @@ export default function ConfirmedDateBridge() {
         }
       });
 
-      const heroMenuButtons = document.querySelectorAll<HTMLButtonElement>(".heroActions button");
-      const settingsButton = heroMenuButtons.item(1);
+      const settingsButton = document.querySelectorAll<HTMLButtonElement>(".heroActions button").item(1);
       if (settingsButton) {
         settingsButton.setAttribute("aria-label", "ตั้งค่าทริป");
         settingsButton.onclick = () => { window.location.href = "/trip-settings"; };
@@ -70,11 +53,10 @@ export default function ConfirmedDateBridge() {
     if (confirmed) {
       const heroDate = document.querySelector<HTMLElement>(".heroDate");
       if (heroDate) heroDate.textContent = confirmed.label;
-
       if (dateTask) {
         const title = dateTask.querySelector("strong");
-        if (title) title.textContent = "วันที่เดินทางยืนยันแล้ว";
         const detail = dateTask.querySelector("small");
+        if (title) title.textContent = "วันที่เดินทางยืนยันแล้ว";
         if (detail) detail.textContent = `${confirmed.label} · แตะเพื่อดูผล`;
       }
     }
@@ -89,34 +71,37 @@ export default function ConfirmedDateBridge() {
       return () => observer.disconnect();
     }
 
-    const totalDays = getDayCount(confirmed.start, confirmed.end);
+    const tabsElement = tabs;
+    const timelineElement = timeline;
+    const addFormElement = addForm;
+    const itineraryTitleElement = itineraryTitle;
     const destination = settings?.destination || "เชียงใหม่";
+    const totalDays = getDayCount(confirmed.start, confirmed.end);
     let activeDay = 1;
-    const storedPlan = readJson<DailyPlan>(PLAN_STORAGE_KEY);
-    const plan: DailyPlan = storedPlan ?? {
+    const plan = readStorage<DailyPlan>(STORAGE_KEYS.dailyItinerary, {
       "1": [
         { id: 1, time: "09:00", title: "คาเฟ่ริมเขา", note: "เริ่มวันแบบชิล ๆ" },
         { id: 2, time: "11:30", title: "เดินเล่นย่านเมืองเก่า", note: "ถ่ายรูปและหาอาหารกลางวัน" }
       ]
-    };
+    });
 
     for (let day = 1; day <= totalDays; day += 1) {
       if (!plan[String(day)]) plan[String(day)] = [];
     }
 
     function savePlan() {
-      window.localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(plan));
+      writeStorage(STORAGE_KEYS.dailyItinerary, plan);
     }
 
     function renderTimeline() {
       const activities = plan[String(activeDay)] ?? [];
-      timeline.replaceChildren();
+      timelineElement.replaceChildren();
 
       if (activities.length === 0) {
         const empty = document.createElement("div");
         empty.className = "itineraryEmpty";
         empty.innerHTML = "<span>🧭</span><strong>วันนี้ยังว่างอยู่</strong><small>เพิ่มกิจกรรมแรกของวันนี้ด้านล่าง</small>";
-        timeline.appendChild(empty);
+        timelineElement.appendChild(empty);
         return;
       }
 
@@ -142,48 +127,53 @@ export default function ConfirmedDateBridge() {
           renderTimeline();
         };
         article.append(time, detail, remove);
-        timeline.appendChild(article);
+        timelineElement.appendChild(article);
       });
     }
 
     function selectDay(day: number) {
       activeDay = day;
-      tabs.querySelectorAll("button").forEach((item, index) => item.classList.toggle("selectedDay", index === day - 1));
-      itineraryTitle.textContent = `วันที่ ${day} · ${destination}`;
+      tabsElement.querySelectorAll("button").forEach((item, index) => item.classList.toggle("selectedDay", index === day - 1));
+      itineraryTitleElement.textContent = `วันที่ ${day} · ${destination}`;
       renderTimeline();
     }
 
-    tabs.replaceChildren();
+    tabsElement.replaceChildren();
     for (let day = 1; day <= totalDays; day += 1) {
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = `วันที่ ${day}`;
       button.onclick = () => selectDay(day);
-      tabs.appendChild(button);
+      tabsElement.appendChild(button);
     }
 
     const submitHandler = (event: Event) => {
       event.preventDefault();
       event.stopImmediatePropagation();
-      const timeInput = addForm.querySelector<HTMLInputElement>('input[type="time"]');
-      const titleInput = addForm.querySelector<HTMLInputElement>('input:not([type="time"])');
+      const timeInput = addFormElement.querySelector<HTMLInputElement>('input[type="time"]');
+      const titleInput = addFormElement.querySelector<HTMLInputElement>('input:not([type="time"])');
       const title = titleInput?.value.trim() ?? "";
       if (!title) return;
-      plan[String(activeDay)].push({ id: Date.now(), time: timeInput?.value || "09:00", title, note: `เพิ่มในวันที่ ${activeDay}` });
+      plan[String(activeDay)].push({
+        id: Date.now(),
+        time: timeInput?.value || "09:00",
+        title,
+        note: `เพิ่มในวันที่ ${activeDay}`
+      });
       if (titleInput) titleInput.value = "";
       savePlan();
       renderTimeline();
     };
 
-    addForm.addEventListener("submit", submitHandler, true);
+    addFormElement.addEventListener("submit", submitHandler, true);
     savePlan();
     selectDay(1);
 
     return () => {
       observer.disconnect();
-      addForm.removeEventListener("submit", submitHandler, true);
+      addFormElement.removeEventListener("submit", submitHandler, true);
     };
-  });
+  }, []);
 
   return null;
 }
