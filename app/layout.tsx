@@ -1,20 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./prototype.css";
-import ConfirmedDateBridge from "./confirmed-date-bridge";
 
 export const metadata: Metadata = {
-  title: "Travel Book Prototype",
-  description: "A playful collaborative travel planner prototype"
+  title: "Travel Book",
+  description: "แพลตฟอร์มวางแผนทริปร่วมกับเพื่อนแบบเรียบง่าย"
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="th">
-      <body>
-        {children}
-        <ConfirmedDateBridge />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
