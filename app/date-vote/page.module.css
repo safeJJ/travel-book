@@ -1,0 +1,308 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(320px, 430px) minmax(260px, 390px);
+  justify-content: center;
+  align-items: center;
+  gap: 64px;
+  padding: 36px;
+  color: #241f1a;
+  background: radial-gradient(circle at top left, #fff9ee 0, #e8dfd1 46%, #d7cbbb 100%);
+}
+
+.phone {
+  min-height: 820px;
+  padding: 24px 20px 34px;
+  overflow: hidden;
+  border: 10px solid #211d19;
+  border-radius: 46px;
+  background:
+    linear-gradient(rgba(255,250,240,.95), rgba(255,250,240,.98)),
+    repeating-linear-gradient(0deg, transparent 0 28px, rgba(65,53,44,.035) 29px 30px);
+  box-shadow: 0 28px 80px rgba(43,31,20,.25);
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.header span,
+.guide > span {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  color: #ce5e40;
+}
+
+.header h1 {
+  margin: 4px 0 0;
+  font-size: 27px;
+  line-height: 1.15;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: inherit;
+  text-decoration: none;
+  background: white;
+  box-shadow: 0 5px 16px rgba(33,29,25,.08);
+}
+
+.identityCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e8dfd2;
+  border-radius: 18px;
+  background: white;
+}
+
+.identityCard small,
+.identityCard strong {
+  display: block;
+}
+
+.identityCard small,
+.intro,
+.choiceText small,
+.recommendation small,
+.confirmedNote p,
+.guide p {
+  color: #756d65;
+}
+
+.identityCard select {
+  max-width: 150px;
+  padding: 10px 12px;
+  border: 1px solid #e8dfd2;
+  border-radius: 12px;
+  background: #fffaf0;
+}
+
+.intro {
+  margin: 18px 2px;
+  line-height: 1.6;
+}
+
+.choiceList {
+  display: grid;
+  gap: 10px;
+}
+
+.choiceCard {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #e8dfd2;
+  border-radius: 20px;
+  background: white;
+  text-align: left;
+  transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+
+.choiceCard:active {
+  transform: scale(.985);
+}
+
+.selected {
+  border-color: #ef7d5b;
+  box-shadow: 0 8px 22px rgba(239,125,91,.14);
+}
+
+.confirmed {
+  border-color: #2f7b5e;
+  background: #f1fbf6;
+}
+
+.check {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 2px solid #d8c8b4;
+  border-radius: 12px;
+  color: white;
+  font-weight: 900;
+}
+
+.selected .check {
+  border-color: #ef7d5b;
+  background: #ef7d5b;
+}
+
+.confirmed .check {
+  border-color: #2f7b5e;
+  background: #2f7b5e;
+}
+
+.choiceText strong,
+.choiceText small {
+  display: block;
+}
+
+.choiceText strong {
+  font-size: 18px;
+}
+
+.choiceText small {
+  margin-top: 3px;
+}
+
+.avatarRow {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.avatarRow span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-right: -6px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #f5ead9;
+}
+
+.available {
+  opacity: 1;
+}
+
+.unavailable {
+  opacity: .28;
+  filter: grayscale(1);
+}
+
+.avatarRow b {
+  margin-left: 14px;
+  font-size: 12px;
+  color: #756d65;
+}
+
+.recommendation,
+.confirmedNote {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 20px;
+  background: #fff2cf;
+  box-shadow: 0 8px 24px rgba(74,54,30,.08);
+}
+
+.recommendation span,
+.recommendation strong,
+.recommendation small,
+.confirmedNote strong {
+  display: block;
+}
+
+.recommendation strong,
+.confirmedNote strong {
+  margin: 6px 0 3px;
+  font-size: 23px;
+}
+
+.recommendation button,
+.confirmedNote button {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 14px;
+  color: white;
+  font-weight: 900;
+  background: #241f1a;
+}
+
+.confirmedNote {
+  text-align: center;
+  background: #eef8f2;
+}
+
+.stamp {
+  width: fit-content;
+  margin: 0 auto 10px;
+  padding: 9px 12px;
+  border: 3px double #2f7b5e;
+  border-radius: 50%;
+  color: #2f7b5e;
+  font-weight: 900;
+  transform: rotate(-6deg);
+}
+
+.confirmedNote button {
+  color: #2f7b5e;
+  background: white;
+  border: 1px solid #b9d9c8;
+}
+
+.note {
+  margin-top: 18px;
+  padding: 13px;
+  border: 1px dashed #ceb99f;
+  border-radius: 14px;
+  color: #6f5b40;
+  background: #fff8e7;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.guide {
+  padding: 34px;
+  border: 1px solid rgba(255,255,255,.6);
+  border-radius: 28px;
+  background: rgba(255,250,240,.68);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 18px 60px rgba(54,41,28,.12);
+}
+
+.guide h2 {
+  margin: 10px 0 16px;
+  font-size: 30px;
+}
+
+.guide p {
+  line-height: 1.7;
+}
+
+.guide ol {
+  padding-left: 22px;
+  line-height: 2;
+}
+
+@media (max-width: 850px) {
+  .shell {
+    display: block;
+    padding: 0;
+    background: #fffaf0;
+  }
+
+  .phone {
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .guide {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choiceCard {
+    transition: none;
+  }
+}
