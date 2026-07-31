@@ -8,6 +8,8 @@ type DateChoice = {
   id: number;
   label: string;
   detail: string;
+  start: string;
+  end: string;
   votes: string[];
 };
 
@@ -18,9 +20,9 @@ const members = [
 ];
 
 const initialChoices: DateChoice[] = [
-  { id: 1, label: "15–18 ส.ค.", detail: "ศุกร์–จันทร์ · 4 วัน 3 คืน", votes: ["SafeJJ", "เมย์"] },
-  { id: 2, label: "22–25 ส.ค.", detail: "ศุกร์–จันทร์ · 4 วัน 3 คืน", votes: ["SafeJJ", "เมย์", "ปอนด์"] },
-  { id: 3, label: "29 ส.ค.–1 ก.ย.", detail: "ศุกร์–จันทร์ · 4 วัน 3 คืน", votes: ["ปอนด์"] }
+  { id: 1, label: "15–18 ส.ค.", detail: "ศุกร์–จันทร์ · 4 วัน 3 คืน", start: "2026-08-15", end: "2026-08-18", votes: ["SafeJJ", "เมย์"] },
+  { id: 2, label: "22–25 ส.ค.", detail: "ศุกร์–จันทร์ · 4 วัน 3 คืน", start: "2026-08-22", end: "2026-08-25", votes: ["SafeJJ", "เมย์", "ปอนด์"] },
+  { id: 3, label: "29 ส.ค.–1 ก.ย.", detail: "ศุกร์–จันทร์ · 4 วัน 3 คืน", start: "2026-08-29", end: "2026-09-01", votes: ["ปอนด์"] }
 ];
 
 export default function DateVotePage() {
@@ -32,6 +34,8 @@ export default function DateVotePage() {
     () => [...choices].sort((a, b) => b.votes.length - a.votes.length)[0],
     [choices]
   );
+
+  const confirmedChoice = choices.find((choice) => choice.id === confirmedId);
 
   function toggleAvailability(id: number) {
     if (confirmedId !== null) return;
@@ -48,6 +52,20 @@ export default function DateVotePage() {
         };
       })
     );
+  }
+
+  function confirmChoice(choice: DateChoice) {
+    setConfirmedId(choice.id);
+    window.localStorage.setItem("travel-book-confirmed-dates", JSON.stringify({
+      label: choice.label,
+      start: choice.start,
+      end: choice.end
+    }));
+  }
+
+  function reopenVote() {
+    setConfirmedId(null);
+    window.localStorage.removeItem("travel-book-confirmed-dates");
   }
 
   return (
@@ -84,7 +102,7 @@ export default function DateVotePage() {
                 type="button"
                 onClick={() => toggleAvailability(choice.id)}
               >
-                <div className={styles.check}>{confirmed ? "✓" : selected ? "✓" : ""}</div>
+                <div className={styles.check}>{confirmed || selected ? "✓" : ""}</div>
                 <div className={styles.choiceText}>
                   <strong>{choice.label}</strong>
                   <small>{choice.detail}</small>
@@ -107,29 +125,30 @@ export default function DateVotePage() {
             <span>✨ ช่วงที่ลงตัวที่สุดตอนนี้</span>
             <strong>{bestChoice.label}</strong>
             <small>สมาชิกสะดวก {bestChoice.votes.length} จาก {members.length} คน</small>
-            <button type="button" onClick={() => setConfirmedId(bestChoice.id)}>หัวหน้าทริปยืนยันช่วงนี้</button>
+            <button type="button" onClick={() => confirmChoice(bestChoice)}>หัวหน้าทริปยืนยันช่วงนี้</button>
           </section>
         ) : (
           <section className={styles.confirmedNote}>
             <div className={styles.stamp}>ยืนยันแล้ว</div>
-            <strong>{choices.find((choice) => choice.id === confirmedId)?.label}</strong>
-            <p>ระบบจะใช้ช่วงนี้สร้างวันในตารางเดินทาง สมาชิกยังเปิดดูผลเดิมได้</p>
-            <button type="button" onClick={() => setConfirmedId(null)}>เปิดให้เลือกใหม่</button>
+            <strong>{confirmedChoice?.label}</strong>
+            <p>บันทึกช่วงวันไว้ในเบราว์เซอร์แล้ว และพร้อมนำไปสร้างตารางเดินทาง</p>
+            <Link href="/">กลับไปหน้าหลัก</Link>
+            <button type="button" onClick={reopenVote}>เปิดให้เลือกใหม่</button>
           </section>
         )}
 
-        <div className={styles.note}>Prototype นี้จำลองการเลือกวันร่วมกัน ข้อมูลจะหายเมื่อรีเฟรชหน้า</div>
+        <div className={styles.note}>ข้อมูลช่วงวันที่ยืนยันจะอยู่ในเบราว์เซอร์เครื่องนี้ จนกว่าจะเปิดให้เลือกใหม่</div>
       </section>
 
       <aside className={styles.guide}>
-        <span>PROTOTYPE 07</span>
-        <h2>ง่าย แต่เป็นงานของทั้งกลุ่ม</h2>
-        <p>สมาชิกเลือกได้หลายช่วง ระบบช่วยชี้ช่วงที่ตรงกันมากที่สุด และให้หัวหน้าทริปเป็นผู้ยืนยันขั้นสุดท้าย</p>
+        <span>PROTOTYPE 08</span>
+        <h2>จากผลโหวตสู่วันเดินทาง</h2>
+        <p>เมื่อหัวหน้าทริปยืนยัน ระบบจะบันทึกช่วงวันไว้และพากลับเข้าสู่ Flow หลักของทริป</p>
         <ol>
-          <li>เลือกชื่อสมาชิก</li>
-          <li>แตะช่วงวันที่สะดวก</li>
-          <li>ดูจำนวนคนที่ว่างตรงกัน</li>
-          <li>หัวหน้าทริปยืนยันผล</li>
+          <li>สมาชิกเลือกวันที่สะดวก</li>
+          <li>ระบบแนะนำช่วงที่ลงตัว</li>
+          <li>หัวหน้าทริปยืนยัน</li>
+          <li>กลับไปวางตารางเดินทาง</li>
         </ol>
       </aside>
     </main>
