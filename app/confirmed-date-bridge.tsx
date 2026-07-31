@@ -4,10 +4,12 @@ import { useEffect } from "react";
 
 const DATE_STORAGE_KEY = "travel-book-confirmed-dates";
 const PLAN_STORAGE_KEY = "travel-book-daily-itinerary";
+const SETTINGS_STORAGE_KEY = "travel-book-trip-settings";
 
 type ConfirmedDates = { label: string; start: string; end: string };
 type DailyActivity = { id: number; time: string; title: string; note: string };
 type DailyPlan = Record<string, DailyActivity[]>;
+type TripSettings = { name: string; destination: string; leader: string; inviteEnabled: boolean; inviteCode: string };
 
 function getDayCount(start: string, end: string) {
   const startDate = new Date(`${start}T00:00:00`);
@@ -29,24 +31,39 @@ export default function ConfirmedDateBridge() {
   useEffect(() => {
     if (window.location.pathname !== "/") return;
 
+    const confirmed = readJson<ConfirmedDates>(DATE_STORAGE_KEY);
+    const settings = readJson<TripSettings>(SETTINGS_STORAGE_KEY);
+
     function connectMainRoutes() {
       document.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
         const text = button.textContent ?? "";
         if (text.includes("กองกลาง") || text.includes("การเงิน")) {
           button.onclick = () => { window.location.href = "/fund-manager"; };
         }
-
         if (text.includes("เลือกวันเดินทาง") || text.includes("วันที่เดินทางยืนยันแล้ว")) {
           button.onclick = () => { window.location.href = "/date-vote"; };
         }
       });
+
+      const heroMenuButtons = document.querySelectorAll<HTMLButtonElement>(".heroActions button");
+      const settingsButton = heroMenuButtons.item(1);
+      if (settingsButton) {
+        settingsButton.setAttribute("aria-label", "ตั้งค่าทริป");
+        settingsButton.onclick = () => { window.location.href = "/trip-settings"; };
+      }
+
+      if (settings) {
+        const heroTitle = document.querySelector<HTMLElement>(".tripHero h1");
+        const destinationBadge = document.querySelector<HTMLElement>(".destinationBadge");
+        if (heroTitle) heroTitle.textContent = settings.name;
+        if (destinationBadge) destinationBadge.textContent = settings.destination;
+      }
     }
 
     connectMainRoutes();
     const observer = new MutationObserver(connectMainRoutes);
     observer.observe(document.body, { childList: true, subtree: true });
 
-    const confirmed = readJson<ConfirmedDates>(DATE_STORAGE_KEY);
     const dateTask = Array.from(document.querySelectorAll<HTMLButtonElement>(".taskCard"))
       .find((button) => button.textContent?.includes("เลือกวันเดินทาง") || button.textContent?.includes("วันที่เดินทางยืนยันแล้ว"));
 
@@ -73,6 +90,7 @@ export default function ConfirmedDateBridge() {
     }
 
     const totalDays = getDayCount(confirmed.start, confirmed.end);
+    const destination = settings?.destination || "เชียงใหม่";
     let activeDay = 1;
     const storedPlan = readJson<DailyPlan>(PLAN_STORAGE_KEY);
     const plan: DailyPlan = storedPlan ?? {
@@ -131,7 +149,7 @@ export default function ConfirmedDateBridge() {
     function selectDay(day: number) {
       activeDay = day;
       tabs.querySelectorAll("button").forEach((item, index) => item.classList.toggle("selectedDay", index === day - 1));
-      itineraryTitle.textContent = `วันที่ ${day} · เชียงใหม่`;
+      itineraryTitle.textContent = `วันที่ ${day} · ${destination}`;
       renderTimeline();
     }
 
