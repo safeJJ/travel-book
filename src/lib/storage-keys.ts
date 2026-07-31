@@ -5,5 +5,6 @@ export const STORAGE_KEYS = {
   tripSettings: "travel-book-trip-settings",
   tasks: "travel-book-tasks",
   memories: "travel-book-memories",
-  places: "travel-book-places"
+  places: "travel-book-places",
+  members: "travel-book-members"
 } as const;
