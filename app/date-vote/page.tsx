@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { removeStorage, readStorage, writeStorage } from "@/lib/storage";
+import { STORAGE_KEYS } from "@/lib/storage-keys";
+import type { ConfirmedDates } from "@/types/trip";
 import styles from "./page.module.css";
 
-type DateChoice = {
+type DateChoice = ConfirmedDates & {
   id: number;
-  label: string;
   detail: string;
-  start: string;
-  end: string;
   votes: string[];
 };
 
@@ -29,6 +29,13 @@ export default function DateVotePage() {
   const [choices, setChoices] = useState(initialChoices);
   const [currentMember, setCurrentMember] = useState("เมย์");
   const [confirmedId, setConfirmedId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const confirmed = readStorage<ConfirmedDates | null>(STORAGE_KEYS.confirmedDates, null);
+    if (!confirmed) return;
+    const match = initialChoices.find((choice) => choice.start === confirmed.start && choice.end === confirmed.end);
+    setConfirmedId(match?.id ?? null);
+  }, []);
 
   const bestChoice = useMemo(
     () => [...choices].sort((a, b) => b.votes.length - a.votes.length)[0],
@@ -56,16 +63,16 @@ export default function DateVotePage() {
 
   function confirmChoice(choice: DateChoice) {
     setConfirmedId(choice.id);
-    window.localStorage.setItem("travel-book-confirmed-dates", JSON.stringify({
+    writeStorage<ConfirmedDates>(STORAGE_KEYS.confirmedDates, {
       label: choice.label,
       start: choice.start,
       end: choice.end
-    }));
+    });
   }
 
   function reopenVote() {
     setConfirmedId(null);
-    window.localStorage.removeItem("travel-book-confirmed-dates");
+    removeStorage(STORAGE_KEYS.confirmedDates);
   }
 
   return (
