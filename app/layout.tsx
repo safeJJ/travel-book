@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./prototype.css";
-import "./prototype-06.css";
+import ConfirmedDateBridge from "./confirmed-date-bridge";
 
 export const metadata: Metadata = {
   title: "Travel Book Prototype",
@@ -11,7 +11,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="th">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ConfirmedDateBridge />
+      </body>
     </html>
   );
 }
