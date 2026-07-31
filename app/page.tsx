@@ -2,10 +2,11 @@
 
 import { FormEvent, useMemo, useState } from "react";
 
-type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund" | "members" | "memories";
+type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund" | "members" | "memories" | "checklist";
 type Activity = { time: string; title: string; note: string };
 type GuestRole = "สมาชิก" | "ผู้ช่วยหัวหน้าทริป";
 type Memory = { emoji: string; caption: string; author: string };
+type ChecklistItem = { id: number; title: string; assignee: string; done: boolean };
 
 const avatars = ["😎", "🐻", "🐱", "🦊", "✈️", "🌴"];
 const memoryEmojis = ["🏔️", "☕", "🌅", "🍜", "📸", "🌿"];
@@ -16,6 +17,11 @@ const initialActivities: Activity[] = [
 const initialMemories: Memory[] = [
   { emoji: "🏔️", caption: "วิวแรกของทริป", author: "SafeJJ" },
   { emoji: "☕", caption: "กาแฟแก้วแรก", author: "เมย์" }
+];
+const initialChecklist: ChecklistItem[] = [
+  { id: 1, title: "จองที่พัก", assignee: "SafeJJ", done: true },
+  { id: 2, title: "เตรียมเสื้อกันหนาว", assignee: "ทุกคน", done: false },
+  { id: 3, title: "เช็กรถเช่า", assignee: "เมย์", done: false }
 ];
 
 export default function Page() {
@@ -38,6 +44,9 @@ export default function Page() {
   const [memories, setMemories] = useState<Memory[]>(initialMemories);
   const [memoryEmoji, setMemoryEmoji] = useState("🌅");
   const [memoryCaption, setMemoryCaption] = useState("");
+  const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
+  const [newTask, setNewTask] = useState("");
+  const [newAssignee, setNewAssignee] = useState("ทุกคน");
 
   const members = useMemo(() => [
     { name: "SafeJJ", avatar: "👑", role: "หัวหน้าทริป", detail: "จัดการทริปทั้งหมด" },
@@ -52,6 +61,7 @@ export default function Page() {
   ], [guestName, avatar, guestRole, financePermission, planPermission]);
 
   const dateLabel = startDate && endDate ? `${startDate} – ${endDate}` : "ยังไม่ได้เลือกวัน";
+  const completedTasks = checklist.filter((item) => item.done).length;
 
   function createTrip(event: FormEvent) {
     event.preventDefault();
@@ -98,6 +108,17 @@ export default function Page() {
     setDraftAnnouncement("");
   }
 
+  function addChecklistItem(event: FormEvent) {
+    event.preventDefault();
+    if (!newTask.trim()) return;
+    setChecklist((items) => [...items, { id: Date.now(), title: newTask.trim(), assignee: newAssignee, done: false }]);
+    setNewTask("");
+  }
+
+  function toggleChecklistItem(id: number) {
+    setChecklist((items) => items.map((item) => item.id === id ? { ...item, done: !item.done } : item));
+  }
+
   function toggleAssistant() {
     setGuestRole((role) => {
       if (role === "ผู้ช่วยหัวหน้าทริป") {
@@ -113,7 +134,7 @@ export default function Page() {
     <nav className="bottomNav" aria-label="เมนูหลัก">
       <button className={step === "home" ? "active" : ""} type="button" onClick={() => setStep("home")}>⌂<small>หน้าหลัก</small></button>
       <button className={step === "itinerary" ? "active" : ""} type="button" onClick={() => setStep("itinerary")}>▤<small>ตาราง</small></button>
-      <button className="addButton" type="button" onClick={() => setStep("itinerary")}>＋</button>
+      <button className="addButton" type="button" onClick={() => setStep("checklist")}>＋</button>
       <button className={step === "fund" ? "active" : ""} type="button" onClick={() => setStep("fund")}>฿<small>การเงิน</small></button>
       <button className={step === "memories" ? "active" : ""} type="button" onClick={() => setStep("memories")}>▧<small>สมุดทริป</small></button>
     </nav>
@@ -158,9 +179,10 @@ export default function Page() {
         {step === "home" && (
           <div className="screen homeScreen">
             <header className="tripHero"><div className="heroActions"><button type="button">↗</button><button type="button">•••</button></div><div className="destinationBadge">{destination}</div><h1>{tripName}</h1><p className="heroDate">{dateLabel}</p><div className="memberStack">{members.map((member) => <span title={`${member.name} · ${member.role}`} key={member.name}>{member.avatar}</span>)}<small>{members.length} คน</small></div></header>
-            <section><div className="sectionHeading"><h2>สิ่งที่ต้องทำต่อ</h2><span>{startDate ? "1 งาน" : "2 งาน"}</span></div>
+            <section><div className="sectionHeading"><h2>สิ่งที่ต้องทำต่อ</h2><span>{startDate ? "2 งาน" : "3 งาน"}</span></div>
               {!startDate && <button className="taskCard" type="button" onClick={() => setStep("dates")}><span className="taskIcon">📅</span><span><strong>เลือกวันเดินทาง</strong><small>ยังไม่ได้กำหนดวัน</small></span><b>›</b></button>}
               <button className="taskCard" type="button" onClick={() => setStep("itinerary")}><span className="taskIcon">🗺️</span><span><strong>จัดตาราง{destination}</strong><small>{activities.length} กิจกรรม</small></span><b>›</b></button>
+              <button className="taskCard" type="button" onClick={() => setStep("checklist")}><span className="taskIcon">✅</span><span><strong>เตรียมของและแบ่งงาน</strong><small>เสร็จแล้ว {completedTasks}/{checklist.length} งาน</small></span><b>›</b></button>
             </section>
             <section><div className="sectionHeading"><h2>ทางลัด</h2></div><div className="shortcutGrid">
               <button type="button" onClick={() => setStep("itinerary")}><span>🗓️</span><strong>ตาราง</strong><small>{activities.length} กิจกรรม</small></button>
@@ -193,9 +215,34 @@ export default function Page() {
         {step === "memories" && (
           <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">สมุดทริป</span><h2>{memories.length} เรื่องราวของพวกเรา</h2></div></header><div className="memoryGrid">{memories.map((memory, index) => <article className="polaroid" key={`${memory.caption}-${index}`}><div>{memory.emoji}</div><strong>{memory.caption}</strong><small>โดย {memory.author}</small></article>)}</div><form className="memoryForm" onSubmit={addMemory}><fieldset><legend>เลือกภาพจำลอง</legend><div className="avatarGrid">{memoryEmojis.map((item) => <button className={memoryEmoji === item ? "avatar selected" : "avatar"} type="button" key={item} onClick={() => setMemoryEmoji(item)}>{item}</button>)}</div></fieldset><label>คำบรรยาย<input placeholder="วันนี้มีอะไรน่าจำ?" value={memoryCaption} onChange={(event) => setMemoryCaption(event.target.value)} /></label><button className="primary" type="submit">เพิ่มลงสมุดทริป</button></form><div className="paperNote">Prototype ใช้อีโมจิแทนรูปจริง รอบระบบจริงจะรองรับการอัปโหลดรูปจากมือถือ</div>{bottomNav}</div>
         )}
+
+        {step === "checklist" && (
+          <div className="screen homeScreen">
+            <header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">เช็กลิสต์และงาน</span><h2>เสร็จแล้ว {completedTasks}/{checklist.length} งาน</h2></div></header>
+            <section className="fundSummary"><small>ความพร้อมของทริป</small><strong>{checklist.length ? Math.round((completedTasks / checklist.length) * 100) : 0}%</strong><div><span>เสร็จแล้ว<br/><b>{completedTasks}</b></span><span>ยังเหลือ<br/><b>{checklist.length - completedTasks}</b></span></div></section>
+            <div className="sectionHeading"><h2>งานทั้งหมด</h2><span>ทุกคนช่วยกันได้</span></div>
+            <div className="expenseList">
+              {checklist.map((item) => (
+                <article key={item.id}>
+                  <button type="button" onClick={() => toggleChecklistItem(item.id)} style={{ width: 44, height: 44, border: 0, borderRadius: 14, background: item.done ? "#dfeedd" : "var(--soft)", fontSize: 22 }}>{item.done ? "✓" : "○"}</button>
+                  <div><strong style={{ textDecoration: item.done ? "line-through" : "none", opacity: item.done ? .55 : 1 }}>{item.title}</strong><small>รับผิดชอบโดย {item.assignee}</small></div>
+                  <b>{item.done ? "เสร็จ" : "รอ"}</b>
+                </article>
+              ))}
+            </div>
+            <form className="inviteCard" onSubmit={addChecklistItem}>
+              <span className="miniLabel">เพิ่มงานใหม่</span>
+              <label>งาน<input placeholder="เช่น จองตั๋วรถ" value={newTask} onChange={(event) => setNewTask(event.target.value)} /></label>
+              <label>ผู้รับผิดชอบ<select value={newAssignee} onChange={(event) => setNewAssignee(event.target.value)} style={{ width: "100%", border: "1.5px solid var(--line)", borderRadius: 16, padding: "15px 16px", background: "white" }}><option>ทุกคน</option><option>SafeJJ</option>{guestName && <option>{guestName}</option>}</select></label>
+              <button className="secondary" type="submit">เพิ่มลงเช็กลิสต์</button>
+            </form>
+            <div className="paperNote">แตะวงกลมหน้าแต่ละงานเพื่อเปลี่ยนสถานะ ทุกคนจะเห็นความคืบหน้าเดียวกันเมื่อเชื่อมฐานข้อมูลจริง</div>
+            {bottomNav}
+          </div>
+        )}
       </section>
 
-      <aside className="prototypeNotes"><span className="eyebrow">PROTOTYPE 04</span><h2>เริ่มมีชีวิตแบบทริปจริง</h2><ol><li>สร้างทริปและชวนเพื่อน</li><li>จัดวัน ตาราง และบทบาท</li><li>ประกาศข้อมูลให้ทั้งกลุ่ม</li><li>เพิ่มเรื่องราวลงสมุดทริป</li></ol><p>ข้อมูลยังอยู่ในหน่วยความจำของเบราว์เซอร์ เพื่อปรับ UX ให้ลงตัวก่อนเชื่อมฐานข้อมูล</p><button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setGuestRole("สมาชิก"); setMemories(initialMemories); }}>เริ่มทดลองใหม่</button></aside>
+      <aside className="prototypeNotes"><span className="eyebrow">PROTOTYPE 05</span><h2>เตรียมทริปเป็นทีม</h2><ol><li>เปิดเช็กลิสต์จากหน้าหลักหรือปุ่มบวก</li><li>เพิ่มงานที่ต้องเตรียม</li><li>มอบหมายให้สมาชิก</li><li>แตะทำเครื่องหมายเมื่อเสร็จ</li></ol><p>ข้อมูลยังอยู่ในหน่วยความจำของเบราว์เซอร์ เพื่อปรับ UX ให้ลงตัวก่อนเชื่อมฐานข้อมูล</p><button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setGuestRole("สมาชิก"); setMemories(initialMemories); setChecklist(initialChecklist); }}>เริ่มทดลองใหม่</button></aside>
     </main>
   );
 }
