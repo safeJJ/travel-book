@@ -2,11 +2,13 @@
 
 import { FormEvent, useMemo, useState } from "react";
 
-type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund" | "members" | "memories" | "checklist";
+type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund" | "members" | "memories" | "checklist" | "places";
 type Activity = { time: string; title: string; note: string };
 type GuestRole = "สมาชิก" | "ผู้ช่วยหัวหน้าทริป";
 type Memory = { emoji: string; caption: string; author: string };
 type ChecklistItem = { id: number; title: string; assignee: string; done: boolean };
+type PlaceType = "ที่เที่ยว" | "ที่พัก" | "ร้านอาหาร";
+type Place = { id: number; name: string; type: PlaceType; emoji: string; note: string; saved: boolean };
 
 const avatars = ["😎", "🐻", "🐱", "🦊", "✈️", "🌴"];
 const memoryEmojis = ["🏔️", "☕", "🌅", "🍜", "📸", "🌿"];
@@ -22,6 +24,11 @@ const initialChecklist: ChecklistItem[] = [
   { id: 1, title: "จองที่พัก", assignee: "SafeJJ", done: true },
   { id: 2, title: "เตรียมเสื้อกันหนาว", assignee: "ทุกคน", done: false },
   { id: 3, title: "เช็กรถเช่า", assignee: "เมย์", done: false }
+];
+const initialPlaces: Place[] = [
+  { id: 1, name: "ประตูท่าแพ", type: "ที่เที่ยว", emoji: "🧱", note: "เดินเล่นและถ่ายรูปช่วงเย็น", saved: true },
+  { id: 2, name: "บ้านพักริมปิง", type: "ที่พัก", emoji: "🏡", note: "ใกล้เมือง มีที่จอดรถ", saved: true },
+  { id: 3, name: "ข้าวซอยแม่สาย", type: "ร้านอาหาร", emoji: "🍜", note: "มื้อกลางวันยอดนิยม", saved: false }
 ];
 
 export default function Page() {
@@ -47,6 +54,10 @@ export default function Page() {
   const [checklist, setChecklist] = useState<ChecklistItem[]>(initialChecklist);
   const [newTask, setNewTask] = useState("");
   const [newAssignee, setNewAssignee] = useState("ทุกคน");
+  const [places, setPlaces] = useState<Place[]>(initialPlaces);
+  const [placeName, setPlaceName] = useState("");
+  const [placeType, setPlaceType] = useState<PlaceType>("ที่เที่ยว");
+  const [placeFilter, setPlaceFilter] = useState<"ทั้งหมด" | PlaceType>("ทั้งหมด");
 
   const members = useMemo(() => [
     { name: "SafeJJ", avatar: "👑", role: "หัวหน้าทริป", detail: "จัดการทริปทั้งหมด" },
@@ -62,6 +73,7 @@ export default function Page() {
 
   const dateLabel = startDate && endDate ? `${startDate} – ${endDate}` : "ยังไม่ได้เลือกวัน";
   const completedTasks = checklist.filter((item) => item.done).length;
+  const filteredPlaces = places.filter((place) => placeFilter === "ทั้งหมด" || place.type === placeFilter);
 
   function createTrip(event: FormEvent) {
     event.preventDefault();
@@ -119,6 +131,18 @@ export default function Page() {
     setChecklist((items) => items.map((item) => item.id === id ? { ...item, done: !item.done } : item));
   }
 
+  function addPlace(event: FormEvent) {
+    event.preventDefault();
+    if (!placeName.trim()) return;
+    const emoji = placeType === "ที่พัก" ? "🏡" : placeType === "ร้านอาหาร" ? "🍽️" : "📍";
+    setPlaces((items) => [...items, { id: Date.now(), name: placeName.trim(), type: placeType, emoji, note: "เพิ่มโดยสมาชิก", saved: true }]);
+    setPlaceName("");
+  }
+
+  function togglePlace(id: number) {
+    setPlaces((items) => items.map((item) => item.id === id ? { ...item, saved: !item.saved } : item));
+  }
+
   function toggleAssistant() {
     setGuestRole((role) => {
       if (role === "ผู้ช่วยหัวหน้าทริป") {
@@ -138,6 +162,10 @@ export default function Page() {
       <button className={step === "fund" ? "active" : ""} type="button" onClick={() => setStep("fund")}>฿<small>การเงิน</small></button>
       <button className={step === "memories" ? "active" : ""} type="button" onClick={() => setStep("memories")}>▧<small>สมุดทริป</small></button>
     </nav>
+  );
+
+  const simpleHeader = (eyebrow: string, title: string) => (
+    <header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">{eyebrow}</span><h2>{title}</h2></div></header>
   );
 
   return (
@@ -179,8 +207,9 @@ export default function Page() {
         {step === "home" && (
           <div className="screen homeScreen">
             <header className="tripHero"><div className="heroActions"><button type="button">↗</button><button type="button">•••</button></div><div className="destinationBadge">{destination}</div><h1>{tripName}</h1><p className="heroDate">{dateLabel}</p><div className="memberStack">{members.map((member) => <span title={`${member.name} · ${member.role}`} key={member.name}>{member.avatar}</span>)}<small>{members.length} คน</small></div></header>
-            <section><div className="sectionHeading"><h2>สิ่งที่ต้องทำต่อ</h2><span>{startDate ? "2 งาน" : "3 งาน"}</span></div>
+            <section><div className="sectionHeading"><h2>สิ่งที่ต้องทำต่อ</h2><span>{startDate ? "3 งาน" : "4 งาน"}</span></div>
               {!startDate && <button className="taskCard" type="button" onClick={() => setStep("dates")}><span className="taskIcon">📅</span><span><strong>เลือกวันเดินทาง</strong><small>ยังไม่ได้กำหนดวัน</small></span><b>›</b></button>}
+              <button className="taskCard" type="button" onClick={() => setStep("places")}><span className="taskIcon">📍</span><span><strong>เก็บสถานที่น่าสนใจ</strong><small>{places.length} สถานที่</small></span><b>›</b></button>
               <button className="taskCard" type="button" onClick={() => setStep("itinerary")}><span className="taskIcon">🗺️</span><span><strong>จัดตาราง{destination}</strong><small>{activities.length} กิจกรรม</small></span><b>›</b></button>
               <button className="taskCard" type="button" onClick={() => setStep("checklist")}><span className="taskIcon">✅</span><span><strong>เตรียมของและแบ่งงาน</strong><small>เสร็จแล้ว {completedTasks}/{checklist.length} งาน</small></span><b>›</b></button>
             </section>
@@ -201,48 +230,44 @@ export default function Page() {
         )}
 
         {step === "itinerary" && (
-          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">ตารางเดินทาง</span><h2>วันที่ 1 · {destination}</h2></div></header><div className="dayTabs"><button className="selectedDay">วันที่ 1</button><button>วันที่ 2</button><button>＋</button></div><div className="timeline">{activities.map((item, index) => <article className="timelineItem" key={`${item.time}-${index}`}><time>{item.time}</time><div><strong>{item.title}</strong><small>{item.note}</small></div><button type="button">•••</button></article>)}</div><form className="inlineAdd" onSubmit={addActivity}><input type="time" value={activityTime} onChange={(event) => setActivityTime(event.target.value)} /><input placeholder="เพิ่มกิจกรรมใหม่" value={activityTitle} onChange={(event) => setActivityTitle(event.target.value)} /><button type="submit">เพิ่ม</button></form>{bottomNav}</div>
+          <div className="screen homeScreen">{simpleHeader("ตารางเดินทาง", `วันที่ 1 · ${destination}`)}<div className="dayTabs"><button className="selectedDay">วันที่ 1</button><button>วันที่ 2</button><button>＋</button></div><div className="timeline">{activities.map((item, index) => <article className="timelineItem" key={`${item.time}-${index}`}><time>{item.time}</time><div><strong>{item.title}</strong><small>{item.note}</small></div><button type="button">•••</button></article>)}</div><form className="inlineAdd" onSubmit={addActivity}><input type="time" value={activityTime} onChange={(event) => setActivityTime(event.target.value)} /><input placeholder="เพิ่มกิจกรรมใหม่" value={activityTitle} onChange={(event) => setActivityTitle(event.target.value)} /><button type="submit">เพิ่ม</button></form>{bottomNav}</div>
         )}
 
         {step === "fund" && (
-          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">เงินกองกลาง</span><h2>บัญชีเดียวของทริป</h2></div></header><section className="fundSummary"><small>ยอดคงเหลือ</small><strong>10,300 บาท</strong><div><span>เงินเข้าทั้งหมด<br/><b>20,000</b></span><span>ใช้ไปแล้ว<br/><b>9,700</b></span></div></section><div className="sectionHeading"><h2>รายการล่าสุด</h2><span>ทุกคนดูได้</span></div><div className="expenseList"><article><span>🍜</span><div><strong>อาหารกลางวัน</strong><small>วันนี้ · โดย เมย์</small></div><b>1,200</b></article><article><span>🏨</span><div><strong>ค่าที่พัก 2 คืน</strong><small>เมื่อวาน · โดย เมย์</small></div><b>6,000</b></article><article><span>🚐</span><div><strong>ค่าเช่ารถ</strong><small>เมื่อวาน · โดย เมย์</small></div><b>2,500</b></article></div><div className="paperNote">{financePermission && guestName ? `${guestName} เป็นผู้ดูแลการเงินและเป็นคนบันทึกรายการ` : "ยังไม่ได้แต่งตั้งผู้ดูแลการเงิน"}</div>{bottomNav}</div>
+          <div className="screen homeScreen">{simpleHeader("เงินกองกลาง", "บัญชีเดียวของทริป")}<section className="fundSummary"><small>ยอดคงเหลือ</small><strong>10,300 บาท</strong><div><span>เงินเข้าทั้งหมด<br/><b>20,000</b></span><span>ใช้ไปแล้ว<br/><b>9,700</b></span></div></section><div className="sectionHeading"><h2>รายการล่าสุด</h2><span>ทุกคนดูได้</span></div><div className="expenseList"><article><span>🍜</span><div><strong>อาหารกลางวัน</strong><small>วันนี้ · โดย เมย์</small></div><b>1,200</b></article><article><span>🏨</span><div><strong>ค่าที่พัก 2 คืน</strong><small>เมื่อวาน · โดย เมย์</small></div><b>6,000</b></article><article><span>🚐</span><div><strong>ค่าเช่ารถ</strong><small>เมื่อวาน · โดย เมย์</small></div><b>2,500</b></article></div><div className="paperNote">{financePermission && guestName ? `${guestName} เป็นผู้ดูแลการเงินและเป็นคนบันทึกรายการ` : "ยังไม่ได้แต่งตั้งผู้ดูแลการเงิน"}</div>{bottomNav}</div>
         )}
 
         {step === "members" && (
-          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">สมาชิกและบทบาท</span><h2>{members.length} คนในทริป</h2></div></header><div className="expenseList">{members.map((member) => <article key={member.name}><span>{member.avatar}</span><div><strong>{member.name}</strong><small>{member.role}<br/>{member.detail}</small></div><b>{member.role === "หัวหน้าทริป" ? "👑" : member.role === "ผู้ช่วยหัวหน้าทริป" ? "⭐" : ""}</b></article>)}</div>{!guestName && <div className="paperNote">จำลองเพื่อนเข้าร่วมก่อน จึงจะทดลองแต่งตั้งผู้ช่วยได้</div>}{guestName && <section className="inviteCard"><span className="miniLabel">จัดการ {guestName}</span><p>หัวหน้าทริปเลือกบทบาทและสิทธิ์เป็นรายคนได้</p><button className="secondary" type="button" onClick={toggleAssistant}>{guestRole === "ผู้ช่วยหัวหน้าทริป" ? "ถอดตำแหน่งผู้ช่วย" : "แต่งตั้งเป็นผู้ช่วย"}</button>{guestRole === "ผู้ช่วยหัวหน้าทริป" && <div className="permissionList"><label><span>ดูแลแผนเดินทาง</span><input type="checkbox" checked={planPermission} onChange={(event) => setPlanPermission(event.target.checked)} /></label><label><span>ดูแลเงินกองกลาง</span><input type="checkbox" checked={financePermission} onChange={(event) => setFinancePermission(event.target.checked)} /></label></div>}</section>}<div className="paperNote">🔒 ชื่อทริป รูปปก การโอนหัวหน้า และการลบทริปยังเป็นสิทธิ์ของหัวหน้าทริปเท่านั้น</div>{bottomNav}</div>
+          <div className="screen homeScreen">{simpleHeader("สมาชิกและบทบาท", `${members.length} คนในทริป`)}<div className="expenseList">{members.map((member) => <article key={member.name}><span>{member.avatar}</span><div><strong>{member.name}</strong><small>{member.role}<br/>{member.detail}</small></div><b>{member.role === "หัวหน้าทริป" ? "👑" : member.role === "ผู้ช่วยหัวหน้าทริป" ? "⭐" : ""}</b></article>)}</div>{!guestName && <div className="paperNote">จำลองเพื่อนเข้าร่วมก่อน จึงจะทดลองแต่งตั้งผู้ช่วยได้</div>}{guestName && <section className="inviteCard"><span className="miniLabel">จัดการ {guestName}</span><p>หัวหน้าทริปเลือกบทบาทและสิทธิ์เป็นรายคนได้</p><button className="secondary" type="button" onClick={toggleAssistant}>{guestRole === "ผู้ช่วยหัวหน้าทริป" ? "ถอดตำแหน่งผู้ช่วย" : "แต่งตั้งเป็นผู้ช่วย"}</button>{guestRole === "ผู้ช่วยหัวหน้าทริป" && <div className="permissionList"><label><span>ดูแลแผนเดินทาง</span><input type="checkbox" checked={planPermission} onChange={(event) => setPlanPermission(event.target.checked)} /></label><label><span>ดูแลเงินกองกลาง</span><input type="checkbox" checked={financePermission} onChange={(event) => setFinancePermission(event.target.checked)} /></label></div>}</section>}<div className="paperNote">🔒 ชื่อทริป รูปปก การโอนหัวหน้า และการลบทริปยังเป็นสิทธิ์ของหัวหน้าทริปเท่านั้น</div>{bottomNav}</div>
         )}
 
         {step === "memories" && (
-          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">สมุดทริป</span><h2>{memories.length} เรื่องราวของพวกเรา</h2></div></header><div className="memoryGrid">{memories.map((memory, index) => <article className="polaroid" key={`${memory.caption}-${index}`}><div>{memory.emoji}</div><strong>{memory.caption}</strong><small>โดย {memory.author}</small></article>)}</div><form className="memoryForm" onSubmit={addMemory}><fieldset><legend>เลือกภาพจำลอง</legend><div className="avatarGrid">{memoryEmojis.map((item) => <button className={memoryEmoji === item ? "avatar selected" : "avatar"} type="button" key={item} onClick={() => setMemoryEmoji(item)}>{item}</button>)}</div></fieldset><label>คำบรรยาย<input placeholder="วันนี้มีอะไรน่าจำ?" value={memoryCaption} onChange={(event) => setMemoryCaption(event.target.value)} /></label><button className="primary" type="submit">เพิ่มลงสมุดทริป</button></form><div className="paperNote">Prototype ใช้อีโมจิแทนรูปจริง รอบระบบจริงจะรองรับการอัปโหลดรูปจากมือถือ</div>{bottomNav}</div>
+          <div className="screen homeScreen">{simpleHeader("สมุดทริป", `${memories.length} เรื่องราวของพวกเรา`)}<div className="memoryGrid">{memories.map((memory, index) => <article className="polaroid" key={`${memory.caption}-${index}`}><div>{memory.emoji}</div><strong>{memory.caption}</strong><small>โดย {memory.author}</small></article>)}</div><form className="memoryForm" onSubmit={addMemory}><fieldset><legend>เลือกภาพจำลอง</legend><div className="avatarGrid">{memoryEmojis.map((item) => <button className={memoryEmoji === item ? "avatar selected" : "avatar"} type="button" key={item} onClick={() => setMemoryEmoji(item)}>{item}</button>)}</div></fieldset><label>คำบรรยาย<input placeholder="วันนี้มีอะไรน่าจำ?" value={memoryCaption} onChange={(event) => setMemoryCaption(event.target.value)} /></label><button className="primary" type="submit">เพิ่มลงสมุดทริป</button></form><div className="paperNote">Prototype ใช้อีโมจิแทนรูปจริง รอบระบบจริงจะรองรับการอัปโหลดรูปจากมือถือ</div>{bottomNav}</div>
         )}
 
         {step === "checklist" && (
+          <div className="screen homeScreen">{simpleHeader("เช็กลิสต์และแบ่งงาน", `เสร็จแล้ว ${completedTasks}/${checklist.length} งาน`)}<section className="fundSummary"><small>ความพร้อมของทริป</small><strong>{Math.round((completedTasks / checklist.length) * 100)}%</strong><div><span>ทำเสร็จแล้ว<br/><b>{completedTasks}</b></span><span>ยังเหลือ<br/><b>{checklist.length - completedTasks}</b></span></div></section><div className="expenseList" style={{ marginTop: 18 }}>{checklist.map((item) => <article key={item.id}><button className={item.done ? "checkButton done" : "checkButton"} type="button" onClick={() => toggleChecklistItem(item.id)}>{item.done ? "✓" : ""}</button><div><strong style={item.done ? { textDecoration: "line-through", opacity: .55 } : undefined}>{item.title}</strong><small>ผู้รับผิดชอบ · {item.assignee}</small></div><b>{item.done ? "เสร็จ" : "รอ"}</b></article>)}</div><form className="inviteCard" onSubmit={addChecklistItem}><span className="miniLabel">เพิ่มงานใหม่</span><label>งานที่ต้องทำ<input placeholder="เช่น จองรถเช่า" value={newTask} onChange={(event) => setNewTask(event.target.value)} /></label><label>ผู้รับผิดชอบ<select value={newAssignee} onChange={(event) => setNewAssignee(event.target.value)}><option>ทุกคน</option><option>SafeJJ</option>{guestName && <option>{guestName}</option>}</select></label><button className="primary" type="submit">เพิ่มลงเช็กลิสต์</button></form>{bottomNav}</div>
+        )}
+
+        {step === "places" && (
           <div className="screen homeScreen">
-            <header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">เช็กลิสต์และงาน</span><h2>เสร็จแล้ว {completedTasks}/{checklist.length} งาน</h2></div></header>
-            <section className="fundSummary"><small>ความพร้อมของทริป</small><strong>{checklist.length ? Math.round((completedTasks / checklist.length) * 100) : 0}%</strong><div><span>เสร็จแล้ว<br/><b>{completedTasks}</b></span><span>ยังเหลือ<br/><b>{checklist.length - completedTasks}</b></span></div></section>
-            <div className="sectionHeading"><h2>งานทั้งหมด</h2><span>ทุกคนช่วยกันได้</span></div>
-            <div className="expenseList">
-              {checklist.map((item) => (
-                <article key={item.id}>
-                  <button type="button" onClick={() => toggleChecklistItem(item.id)} style={{ width: 44, height: 44, border: 0, borderRadius: 14, background: item.done ? "#dfeedd" : "var(--soft)", fontSize: 22 }}>{item.done ? "✓" : "○"}</button>
-                  <div><strong style={{ textDecoration: item.done ? "line-through" : "none", opacity: item.done ? .55 : 1 }}>{item.title}</strong><small>รับผิดชอบโดย {item.assignee}</small></div>
-                  <b>{item.done ? "เสร็จ" : "รอ"}</b>
-                </article>
-              ))}
-            </div>
-            <form className="inviteCard" onSubmit={addChecklistItem}>
-              <span className="miniLabel">เพิ่มงานใหม่</span>
-              <label>งาน<input placeholder="เช่น จองตั๋วรถ" value={newTask} onChange={(event) => setNewTask(event.target.value)} /></label>
-              <label>ผู้รับผิดชอบ<select value={newAssignee} onChange={(event) => setNewAssignee(event.target.value)} style={{ width: "100%", border: "1.5px solid var(--line)", borderRadius: 16, padding: "15px 16px", background: "white" }}><option>ทุกคน</option><option>SafeJJ</option>{guestName && <option>{guestName}</option>}</select></label>
-              <button className="secondary" type="submit">เพิ่มลงเช็กลิสต์</button>
-            </form>
-            <div className="paperNote">แตะวงกลมหน้าแต่ละงานเพื่อเปลี่ยนสถานะ ทุกคนจะเห็นความคืบหน้าเดียวกันเมื่อเชื่อมฐานข้อมูลจริง</div>
+            {simpleHeader("สถานที่ของทริป", `${places.length} จุดใน ${destination}`)}
+            <section className="mapPrototype" aria-label="แผนที่จำลอง">
+              <div className="mapRoad roadOne" />
+              <div className="mapRoad roadTwo" />
+              {places.map((place, index) => <button key={place.id} className={`mapPin pin${(index % 3) + 1}`} type="button" title={place.name}>{place.emoji}</button>)}
+              <span>แผนที่จำลอง · รอบจริงจะเชื่อม Mapbox หรือ Google Maps</span>
+            </section>
+            <div className="dayTabs">{(["ทั้งหมด", "ที่เที่ยว", "ที่พัก", "ร้านอาหาร"] as const).map((filter) => <button className={placeFilter === filter ? "selectedDay" : ""} type="button" key={filter} onClick={() => setPlaceFilter(filter)}>{filter}</button>)}</div>
+            <div className="expenseList" style={{ marginTop: 14 }}>{filteredPlaces.map((place) => <article key={place.id}><span>{place.emoji}</span><div><strong>{place.name}</strong><small>{place.type} · {place.note}</small></div><button className={place.saved ? "savePlace saved" : "savePlace"} type="button" onClick={() => togglePlace(place.id)}>{place.saved ? "★" : "☆"}</button></article>)}</div>
+            <form className="inviteCard" onSubmit={addPlace}><span className="miniLabel">เพิ่มสถานที่</span><label>ชื่อสถานที่<input placeholder="เช่น คาเฟ่ริมปิง" value={placeName} onChange={(event) => setPlaceName(event.target.value)} /></label><label>ประเภท<select value={placeType} onChange={(event) => setPlaceType(event.target.value as PlaceType)}><option>ที่เที่ยว</option><option>ที่พัก</option><option>ร้านอาหาร</option></select></label><button className="primary" type="submit">เพิ่มลงแผนที่</button></form>
+            <div className="paperNote">สมาชิกทุกคนเพิ่มสถานที่ได้ ดาวสีเข้มหมายถึงสถานที่ที่กลุ่มบันทึกไว้แล้ว</div>
             {bottomNav}
           </div>
         )}
       </section>
 
-      <aside className="prototypeNotes"><span className="eyebrow">PROTOTYPE 05</span><h2>เตรียมทริปเป็นทีม</h2><ol><li>เปิดเช็กลิสต์จากหน้าหลักหรือปุ่มบวก</li><li>เพิ่มงานที่ต้องเตรียม</li><li>มอบหมายให้สมาชิก</li><li>แตะทำเครื่องหมายเมื่อเสร็จ</li></ol><p>ข้อมูลยังอยู่ในหน่วยความจำของเบราว์เซอร์ เพื่อปรับ UX ให้ลงตัวก่อนเชื่อมฐานข้อมูล</p><button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setGuestRole("สมาชิก"); setMemories(initialMemories); setChecklist(initialChecklist); }}>เริ่มทดลองใหม่</button></aside>
+      <aside className="prototypeNotes"><span className="eyebrow">PROTOTYPE 06</span><h2>วางทริปจากสถานที่จริง</h2><ol><li>เก็บที่เที่ยว ที่พัก และร้านอาหาร</li><li>ดูจุดทั้งหมดบนแผนที่จำลอง</li><li>กรองตามประเภท</li><li>บันทึกสถานที่ที่สนใจ</li></ol><p>ตอนนี้แผนที่เป็น UI จำลองเพื่อทดสอบ Flow ก่อนเลือกผู้ให้บริการแผนที่และเชื่อมฐานข้อมูลจริง</p><button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setPlaces(initialPlaces); }}>เริ่มทดลองใหม่</button></aside>
     </main>
   );
 }
