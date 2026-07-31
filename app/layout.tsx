@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./prototype.css";
+import "./prototype-06.css";
 
 export const metadata: Metadata = {
   title: "Travel Book Prototype",
