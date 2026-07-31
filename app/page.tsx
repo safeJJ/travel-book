@@ -2,8 +2,9 @@
 
 import { FormEvent, useMemo, useState } from "react";
 
-type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund";
+type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund" | "members";
 type Activity = { time: string; title: string; note: string };
+type GuestRole = "สมาชิก" | "ผู้ช่วยหัวหน้าทริป";
 
 const avatars = ["😎", "🐻", "🐱", "🦊", "✈️", "🌴"];
 const initialActivities: Activity[] = [
@@ -17,6 +18,9 @@ export default function Page() {
   const [destination, setDestination] = useState("เชียงใหม่");
   const [guestName, setGuestName] = useState("");
   const [avatar, setAvatar] = useState("😎");
+  const [guestRole, setGuestRole] = useState<GuestRole>("สมาชิก");
+  const [financePermission, setFinancePermission] = useState(false);
+  const [planPermission, setPlanPermission] = useState(false);
   const [copied, setCopied] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -25,9 +29,16 @@ export default function Page() {
   const [activityTime, setActivityTime] = useState("14:00");
 
   const members = useMemo(() => [
-    { name: "SafeJJ", avatar: "👑", role: "หัวหน้าทริป" },
-    ...(guestName ? [{ name: guestName, avatar, role: "สมาชิก" }] : [])
-  ], [guestName, avatar]);
+    { name: "SafeJJ", avatar: "👑", role: "หัวหน้าทริป", detail: "จัดการทริปทั้งหมด" },
+    ...(guestName ? [{
+      name: guestName,
+      avatar,
+      role: guestRole,
+      detail: guestRole === "ผู้ช่วยหัวหน้าทริป"
+        ? [financePermission && "ดูแลการเงิน", planPermission && "ดูแลแผน"].filter(Boolean).join(" · ") || "ยังไม่ได้รับสิทธิ์เพิ่มเติม"
+        : "ร่วมวางแผนและดูข้อมูลทริป"
+    }] : [])
+  ], [guestName, avatar, guestRole, financePermission, planPermission]);
 
   const dateLabel = startDate && endDate ? `${startDate} – ${endDate}` : "ยังไม่ได้เลือกวัน";
 
@@ -60,6 +71,17 @@ export default function Page() {
     if (!activityTitle.trim()) return;
     setActivities((items) => [...items, { time: activityTime, title: activityTitle.trim(), note: "เพิ่มโดยสมาชิก" }]);
     setActivityTitle("");
+  }
+
+  function toggleAssistant() {
+    setGuestRole((role) => {
+      if (role === "ผู้ช่วยหัวหน้าทริป") {
+        setFinancePermission(false);
+        setPlanPermission(false);
+        return "สมาชิก";
+      }
+      return "ผู้ช่วยหัวหน้าทริป";
+    });
   }
 
   const bottomNav = (
@@ -119,7 +141,7 @@ export default function Page() {
             <section><div className="sectionHeading"><h2>ทางลัด</h2></div><div className="shortcutGrid">
               <button type="button" onClick={() => setStep("itinerary")}><span>🗓️</span><strong>ตาราง</strong><small>{activities.length} กิจกรรม</small></button>
               <button type="button" onClick={() => setStep("fund")}><span>💰</span><strong>กองกลาง</strong><small>10,300 บาท</small></button>
-              <button type="button"><span>👥</span><strong>สมาชิก</strong><small>{members.length} คน</small></button>
+              <button type="button" onClick={() => setStep("members")}><span>👥</span><strong>สมาชิก</strong><small>{members.length} คน</small></button>
               <button type="button"><span>📸</span><strong>สมุดทริป</strong><small>เริ่มเก็บเรื่องราว</small></button>
             </div></section>{bottomNav}
           </div>
@@ -134,11 +156,48 @@ export default function Page() {
         )}
 
         {step === "fund" && (
-          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">เงินกองกลาง</span><h2>บัญชีเดียวของทริป</h2></div></header><section className="fundSummary"><small>ยอดคงเหลือ</small><strong>10,300 บาท</strong><div><span>เงินเข้าทั้งหมด<br/><b>20,000</b></span><span>ใช้ไปแล้ว<br/><b>9,700</b></span></div></section><div className="sectionHeading"><h2>รายการล่าสุด</h2><span>ทุกคนดูได้</span></div><div className="expenseList"><article><span>🍜</span><div><strong>อาหารกลางวัน</strong><small>วันนี้ · โดย เมย์</small></div><b>1,200</b></article><article><span>🏨</span><div><strong>ค่าที่พัก 2 คืน</strong><small>เมื่อวาน · โดย เมย์</small></div><b>6,000</b></article><article><span>🚐</span><div><strong>ค่าเช่ารถ</strong><small>เมื่อวาน · โดย เมย์</small></div><b>2,500</b></article></div><div className="paperNote">ผู้ดูแลการเงินเป็นคนเพิ่มและแก้รายการ สมาชิกทุกคนเปิดดูได้</div>{bottomNav}</div>
+          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">เงินกองกลาง</span><h2>บัญชีเดียวของทริป</h2></div></header><section className="fundSummary"><small>ยอดคงเหลือ</small><strong>10,300 บาท</strong><div><span>เงินเข้าทั้งหมด<br/><b>20,000</b></span><span>ใช้ไปแล้ว<br/><b>9,700</b></span></div></section><div className="sectionHeading"><h2>รายการล่าสุด</h2><span>ทุกคนดูได้</span></div><div className="expenseList"><article><span>🍜</span><div><strong>อาหารกลางวัน</strong><small>วันนี้ · โดย เมย์</small></div><b>1,200</b></article><article><span>🏨</span><div><strong>ค่าที่พัก 2 คืน</strong><small>เมื่อวาน · โดย เมย์</small></div><b>6,000</b></article><article><span>🚐</span><div><strong>ค่าเช่ารถ</strong><small>เมื่อวาน · โดย เมย์</small></div><b>2,500</b></article></div><div className="paperNote">{financePermission && guestName ? `${guestName} เป็นผู้ดูแลการเงินและเป็นคนบันทึกรายการ` : "ยังไม่ได้แต่งตั้งผู้ดูแลการเงิน"}</div>{bottomNav}</div>
+        )}
+
+        {step === "members" && (
+          <div className="screen homeScreen">
+            <header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">สมาชิกและบทบาท</span><h2>{members.length} คนในทริป</h2></div></header>
+            <div className="expenseList">
+              {members.map((member) => <article key={member.name}><span>{member.avatar}</span><div><strong>{member.name}</strong><small>{member.role}<br/>{member.detail}</small></div><b>{member.role === "หัวหน้าทริป" ? "👑" : member.role === "ผู้ช่วยหัวหน้าทริป" ? "⭐" : ""}</b></article>)}
+            </div>
+
+            {!guestName && <div className="paperNote">จำลองเพื่อนเข้าร่วมก่อน จึงจะทดลองแต่งตั้งผู้ช่วยได้</div>}
+
+            {guestName && (
+              <section className="inviteCard">
+                <span className="miniLabel">จัดการ {guestName}</span>
+                <p>หัวหน้าทริปเลือกบทบาทและสิทธิ์เป็นรายคนได้</p>
+                <button className="secondary" type="button" onClick={toggleAssistant}>{guestRole === "ผู้ช่วยหัวหน้าทริป" ? "ถอดตำแหน่งผู้ช่วย" : "แต่งตั้งเป็นผู้ช่วย"}</button>
+                {guestRole === "ผู้ช่วยหัวหน้าทริป" && (
+                  <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
+                    <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: 0, padding: 12, border: "1px solid var(--line)", borderRadius: 14 }}>
+                      <span>ดูแลแผนเดินทาง</span><input style={{ width: 22, height: 22 }} type="checkbox" checked={planPermission} onChange={(event) => setPlanPermission(event.target.checked)} />
+                    </label>
+                    <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: 0, padding: 12, border: "1px solid var(--line)", borderRadius: 14 }}>
+                      <span>ดูแลเงินกองกลาง</span><input style={{ width: 22, height: 22 }} type="checkbox" checked={financePermission} onChange={(event) => setFinancePermission(event.target.checked)} />
+                    </label>
+                  </div>
+                )}
+              </section>
+            )}
+
+            <div className="paperNote">🔒 ชื่อทริป รูปปก การโอนหัวหน้า และการลบทริปยังเป็นสิทธิ์ของหัวหน้าทริปเท่านั้น</div>
+            {bottomNav}
+          </div>
         )}
       </section>
 
-      <aside className="prototypeNotes"><span className="eyebrow">PROTOTYPE 02</span><h2>Flow ที่ทดลองได้</h2><ol><li>สร้างทริปและเชิญเพื่อน</li><li>เลือกวันเดินทาง</li><li>เพิ่มกิจกรรมในตาราง</li><li>ดูเงินกองกลาง</li></ol><p>รอบนี้ยังเก็บข้อมูลในหน่วยความจำของเบราว์เซอร์ เพื่อทดสอบความเข้าใจง่ายก่อนเชื่อมฐานข้อมูลจริง</p><button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setStartDate(""); setEndDate(""); setActivities(initialActivities); }}>เริ่มทดลองใหม่</button></aside>
+      <aside className="prototypeNotes">
+        <span className="eyebrow">PROTOTYPE 03</span><h2>ทดลองบทบาทร่วมกัน</h2>
+        <ol><li>สร้างทริปและจำลองเพื่อนเข้าร่วม</li><li>เปิดทางลัด “สมาชิก”</li><li>แต่งตั้งเพื่อนเป็นผู้ช่วยหัวหน้าทริป</li><li>เลือกสิทธิ์ดูแลแผนหรือเงินกองกลาง</li></ol>
+        <p>ข้อมูลยังเป็นสถานะจำลองในเบราว์เซอร์ เพื่อทดสอบความเข้าใจของหน้าจอก่อนทำระบบจริง</p>
+        <button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setGuestRole("สมาชิก"); setFinancePermission(false); setPlanPermission(false); }}>เริ่มทดลองใหม่</button>
+      </aside>
     </main>
   );
 }
