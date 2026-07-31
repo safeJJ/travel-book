@@ -2,14 +2,20 @@
 
 import { FormEvent, useMemo, useState } from "react";
 
-type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund" | "members";
+type Step = "create" | "created" | "join" | "home" | "dates" | "itinerary" | "fund" | "members" | "memories";
 type Activity = { time: string; title: string; note: string };
 type GuestRole = "สมาชิก" | "ผู้ช่วยหัวหน้าทริป";
+type Memory = { emoji: string; caption: string; author: string };
 
 const avatars = ["😎", "🐻", "🐱", "🦊", "✈️", "🌴"];
+const memoryEmojis = ["🏔️", "☕", "🌅", "🍜", "📸", "🌿"];
 const initialActivities: Activity[] = [
   { time: "09:00", title: "คาเฟ่ริมเขา", note: "เริ่มวันแบบชิล ๆ" },
   { time: "11:30", title: "เดินเล่นย่านเมืองเก่า", note: "ถ่ายรูปและหาอาหารกลางวัน" }
+];
+const initialMemories: Memory[] = [
+  { emoji: "🏔️", caption: "วิวแรกของทริป", author: "SafeJJ" },
+  { emoji: "☕", caption: "กาแฟแก้วแรก", author: "เมย์" }
 ];
 
 export default function Page() {
@@ -27,6 +33,11 @@ export default function Page() {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [activityTitle, setActivityTitle] = useState("");
   const [activityTime, setActivityTime] = useState("14:00");
+  const [announcement, setAnnouncement] = useState("อย่าลืมเตรียมเสื้อกันหนาวนะทุกคน!");
+  const [draftAnnouncement, setDraftAnnouncement] = useState("");
+  const [memories, setMemories] = useState<Memory[]>(initialMemories);
+  const [memoryEmoji, setMemoryEmoji] = useState("🌅");
+  const [memoryCaption, setMemoryCaption] = useState("");
 
   const members = useMemo(() => [
     { name: "SafeJJ", avatar: "👑", role: "หัวหน้าทริป", detail: "จัดการทริปทั้งหมด" },
@@ -73,6 +84,20 @@ export default function Page() {
     setActivityTitle("");
   }
 
+  function addMemory(event: FormEvent) {
+    event.preventDefault();
+    if (!memoryCaption.trim()) return;
+    setMemories((items) => [...items, { emoji: memoryEmoji, caption: memoryCaption.trim(), author: guestName || "SafeJJ" }]);
+    setMemoryCaption("");
+  }
+
+  function publishAnnouncement(event: FormEvent) {
+    event.preventDefault();
+    if (!draftAnnouncement.trim()) return;
+    setAnnouncement(draftAnnouncement.trim());
+    setDraftAnnouncement("");
+  }
+
   function toggleAssistant() {
     setGuestRole((role) => {
       if (role === "ผู้ช่วยหัวหน้าทริป") {
@@ -90,7 +115,7 @@ export default function Page() {
       <button className={step === "itinerary" ? "active" : ""} type="button" onClick={() => setStep("itinerary")}>▤<small>ตาราง</small></button>
       <button className="addButton" type="button" onClick={() => setStep("itinerary")}>＋</button>
       <button className={step === "fund" ? "active" : ""} type="button" onClick={() => setStep("fund")}>฿<small>การเงิน</small></button>
-      <button type="button">▧<small>สมุดทริป</small></button>
+      <button className={step === "memories" ? "active" : ""} type="button" onClick={() => setStep("memories")}>▧<small>สมุดทริป</small></button>
     </nav>
   );
 
@@ -99,7 +124,7 @@ export default function Page() {
       <section className="phone" aria-live="polite">
         {step === "create" && (
           <form className="screen" onSubmit={createTrip}>
-            <header className="topbar"><span className="eyebrow">TRAVEL BOOK</span><button className="iconButton" type="button" aria-label="เมนู">•••</button></header>
+            <header className="topbar"><span className="eyebrow">TRAVEL BOOK</span><button className="iconButton" type="button">•••</button></header>
             <div className="heroTape">เริ่มทริปใหม่</div>
             <h1>ทริปดี ๆ เริ่มจากชื่อที่จำได้</h1>
             <p className="lead">สร้างให้เสร็จในไม่กี่วินาที แล้วค่อยชวนเพื่อนมาช่วยกันวางแผน</p>
@@ -107,7 +132,6 @@ export default function Page() {
             <label>จุดหมาย<input value={destination} onChange={(event) => setDestination(event.target.value)} maxLength={50} /></label>
             <button className="coverPicker" type="button"><span className="coverEmoji">🏔️</span><span><strong>เพิ่มรูปปก</strong><small>ข้ามก่อนได้</small></span><span>＋</span></button>
             <button className="primary" type="submit">สร้างทริป</button>
-            <p className="hint">กรอกเพียงชื่อทริปและจุดหมายก่อน</p>
           </form>
         )}
 
@@ -142,8 +166,11 @@ export default function Page() {
               <button type="button" onClick={() => setStep("itinerary")}><span>🗓️</span><strong>ตาราง</strong><small>{activities.length} กิจกรรม</small></button>
               <button type="button" onClick={() => setStep("fund")}><span>💰</span><strong>กองกลาง</strong><small>10,300 บาท</small></button>
               <button type="button" onClick={() => setStep("members")}><span>👥</span><strong>สมาชิก</strong><small>{members.length} คน</small></button>
-              <button type="button"><span>📸</span><strong>สมุดทริป</strong><small>เริ่มเก็บเรื่องราว</small></button>
-            </div></section>{bottomNav}
+              <button type="button" onClick={() => setStep("memories")}><span>📸</span><strong>สมุดทริป</strong><small>{memories.length} เรื่องราว</small></button>
+            </div></section>
+            <section className="announcementCard"><div><span className="miniLabel">ประกาศล่าสุด</span><p>{announcement}</p><small>โดย SafeJJ · หัวหน้าทริป</small></div><span>📌</span></section>
+            <form className="announcementForm" onSubmit={publishAnnouncement}><input placeholder="เขียนประกาศสั้น ๆ" value={draftAnnouncement} onChange={(event) => setDraftAnnouncement(event.target.value)} /><button type="submit">ประกาศ</button></form>
+            {bottomNav}
           </div>
         )}
 
@@ -152,7 +179,7 @@ export default function Page() {
         )}
 
         {step === "itinerary" && (
-          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">ตารางเดินทาง</span><h2>วันที่ 1 · {destination}</h2></div></header><div className="dayTabs"><button className="selectedDay">วันที่ 1</button><button>วันที่ 2</button><button>＋</button></div><div className="timeline">{activities.map((item, index) => <article className="timelineItem" key={`${item.time}-${index}`}><time>{item.time}</time><div><strong>{item.title}</strong><small>{item.note}</small></div><button type="button" aria-label="แก้ไข">•••</button></article>)}</div><form className="inlineAdd" onSubmit={addActivity}><input type="time" value={activityTime} onChange={(event) => setActivityTime(event.target.value)} /><input placeholder="เพิ่มกิจกรรมใหม่" value={activityTitle} onChange={(event) => setActivityTitle(event.target.value)} /><button type="submit">เพิ่ม</button></form>{bottomNav}</div>
+          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">ตารางเดินทาง</span><h2>วันที่ 1 · {destination}</h2></div></header><div className="dayTabs"><button className="selectedDay">วันที่ 1</button><button>วันที่ 2</button><button>＋</button></div><div className="timeline">{activities.map((item, index) => <article className="timelineItem" key={`${item.time}-${index}`}><time>{item.time}</time><div><strong>{item.title}</strong><small>{item.note}</small></div><button type="button">•••</button></article>)}</div><form className="inlineAdd" onSubmit={addActivity}><input type="time" value={activityTime} onChange={(event) => setActivityTime(event.target.value)} /><input placeholder="เพิ่มกิจกรรมใหม่" value={activityTitle} onChange={(event) => setActivityTitle(event.target.value)} /><button type="submit">เพิ่ม</button></form>{bottomNav}</div>
         )}
 
         {step === "fund" && (
@@ -160,44 +187,15 @@ export default function Page() {
         )}
 
         {step === "members" && (
-          <div className="screen homeScreen">
-            <header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">สมาชิกและบทบาท</span><h2>{members.length} คนในทริป</h2></div></header>
-            <div className="expenseList">
-              {members.map((member) => <article key={member.name}><span>{member.avatar}</span><div><strong>{member.name}</strong><small>{member.role}<br/>{member.detail}</small></div><b>{member.role === "หัวหน้าทริป" ? "👑" : member.role === "ผู้ช่วยหัวหน้าทริป" ? "⭐" : ""}</b></article>)}
-            </div>
+          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">สมาชิกและบทบาท</span><h2>{members.length} คนในทริป</h2></div></header><div className="expenseList">{members.map((member) => <article key={member.name}><span>{member.avatar}</span><div><strong>{member.name}</strong><small>{member.role}<br/>{member.detail}</small></div><b>{member.role === "หัวหน้าทริป" ? "👑" : member.role === "ผู้ช่วยหัวหน้าทริป" ? "⭐" : ""}</b></article>)}</div>{!guestName && <div className="paperNote">จำลองเพื่อนเข้าร่วมก่อน จึงจะทดลองแต่งตั้งผู้ช่วยได้</div>}{guestName && <section className="inviteCard"><span className="miniLabel">จัดการ {guestName}</span><p>หัวหน้าทริปเลือกบทบาทและสิทธิ์เป็นรายคนได้</p><button className="secondary" type="button" onClick={toggleAssistant}>{guestRole === "ผู้ช่วยหัวหน้าทริป" ? "ถอดตำแหน่งผู้ช่วย" : "แต่งตั้งเป็นผู้ช่วย"}</button>{guestRole === "ผู้ช่วยหัวหน้าทริป" && <div className="permissionList"><label><span>ดูแลแผนเดินทาง</span><input type="checkbox" checked={planPermission} onChange={(event) => setPlanPermission(event.target.checked)} /></label><label><span>ดูแลเงินกองกลาง</span><input type="checkbox" checked={financePermission} onChange={(event) => setFinancePermission(event.target.checked)} /></label></div>}</section>}<div className="paperNote">🔒 ชื่อทริป รูปปก การโอนหัวหน้า และการลบทริปยังเป็นสิทธิ์ของหัวหน้าทริปเท่านั้น</div>{bottomNav}</div>
+        )}
 
-            {!guestName && <div className="paperNote">จำลองเพื่อนเข้าร่วมก่อน จึงจะทดลองแต่งตั้งผู้ช่วยได้</div>}
-
-            {guestName && (
-              <section className="inviteCard">
-                <span className="miniLabel">จัดการ {guestName}</span>
-                <p>หัวหน้าทริปเลือกบทบาทและสิทธิ์เป็นรายคนได้</p>
-                <button className="secondary" type="button" onClick={toggleAssistant}>{guestRole === "ผู้ช่วยหัวหน้าทริป" ? "ถอดตำแหน่งผู้ช่วย" : "แต่งตั้งเป็นผู้ช่วย"}</button>
-                {guestRole === "ผู้ช่วยหัวหน้าทริป" && (
-                  <div style={{ display: "grid", gap: 10, marginTop: 16 }}>
-                    <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: 0, padding: 12, border: "1px solid var(--line)", borderRadius: 14 }}>
-                      <span>ดูแลแผนเดินทาง</span><input style={{ width: 22, height: 22 }} type="checkbox" checked={planPermission} onChange={(event) => setPlanPermission(event.target.checked)} />
-                    </label>
-                    <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: 0, padding: 12, border: "1px solid var(--line)", borderRadius: 14 }}>
-                      <span>ดูแลเงินกองกลาง</span><input style={{ width: 22, height: 22 }} type="checkbox" checked={financePermission} onChange={(event) => setFinancePermission(event.target.checked)} />
-                    </label>
-                  </div>
-                )}
-              </section>
-            )}
-
-            <div className="paperNote">🔒 ชื่อทริป รูปปก การโอนหัวหน้า และการลบทริปยังเป็นสิทธิ์ของหัวหน้าทริปเท่านั้น</div>
-            {bottomNav}
-          </div>
+        {step === "memories" && (
+          <div className="screen homeScreen"><header className="simpleHeader"><button className="back" type="button" onClick={() => setStep("home")}>←</button><div><span className="eyebrow">สมุดทริป</span><h2>{memories.length} เรื่องราวของพวกเรา</h2></div></header><div className="memoryGrid">{memories.map((memory, index) => <article className="polaroid" key={`${memory.caption}-${index}`}><div>{memory.emoji}</div><strong>{memory.caption}</strong><small>โดย {memory.author}</small></article>)}</div><form className="memoryForm" onSubmit={addMemory}><fieldset><legend>เลือกภาพจำลอง</legend><div className="avatarGrid">{memoryEmojis.map((item) => <button className={memoryEmoji === item ? "avatar selected" : "avatar"} type="button" key={item} onClick={() => setMemoryEmoji(item)}>{item}</button>)}</div></fieldset><label>คำบรรยาย<input placeholder="วันนี้มีอะไรน่าจำ?" value={memoryCaption} onChange={(event) => setMemoryCaption(event.target.value)} /></label><button className="primary" type="submit">เพิ่มลงสมุดทริป</button></form><div className="paperNote">Prototype ใช้อีโมจิแทนรูปจริง รอบระบบจริงจะรองรับการอัปโหลดรูปจากมือถือ</div>{bottomNav}</div>
         )}
       </section>
 
-      <aside className="prototypeNotes">
-        <span className="eyebrow">PROTOTYPE 03</span><h2>ทดลองบทบาทร่วมกัน</h2>
-        <ol><li>สร้างทริปและจำลองเพื่อนเข้าร่วม</li><li>เปิดทางลัด “สมาชิก”</li><li>แต่งตั้งเพื่อนเป็นผู้ช่วยหัวหน้าทริป</li><li>เลือกสิทธิ์ดูแลแผนหรือเงินกองกลาง</li></ol>
-        <p>ข้อมูลยังเป็นสถานะจำลองในเบราว์เซอร์ เพื่อทดสอบความเข้าใจของหน้าจอก่อนทำระบบจริง</p>
-        <button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setGuestRole("สมาชิก"); setFinancePermission(false); setPlanPermission(false); }}>เริ่มทดลองใหม่</button>
-      </aside>
+      <aside className="prototypeNotes"><span className="eyebrow">PROTOTYPE 04</span><h2>เริ่มมีชีวิตแบบทริปจริง</h2><ol><li>สร้างทริปและชวนเพื่อน</li><li>จัดวัน ตาราง และบทบาท</li><li>ประกาศข้อมูลให้ทั้งกลุ่ม</li><li>เพิ่มเรื่องราวลงสมุดทริป</li></ol><p>ข้อมูลยังอยู่ในหน่วยความจำของเบราว์เซอร์ เพื่อปรับ UX ให้ลงตัวก่อนเชื่อมฐานข้อมูล</p><button className="reset" type="button" onClick={() => { setStep("create"); setGuestName(""); setGuestRole("สมาชิก"); setMemories(initialMemories); }}>เริ่มทดลองใหม่</button></aside>
     </main>
   );
 }
