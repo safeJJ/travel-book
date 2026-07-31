@@ -6,5 +6,6 @@ export const STORAGE_KEYS = {
   tasks: "travel-book-tasks",
   memories: "travel-book-memories",
   places: "travel-book-places",
-  members: "travel-book-members"
+  members: "travel-book-members",
+  editMode: "travel-book-edit-mode"
 } as const;
