@@ -29,6 +29,29 @@
 .polaroid small { color: var(--muted); }
 .memoryForm { margin-top: 8px; padding: 18px; border-radius: 22px; background: rgba(255,255,255,.75); border: 1px solid var(--line); }
 .memoryForm fieldset { margin-bottom: 18px; }
+.itineraryEmpty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 18px 0;
+  padding: 30px 18px;
+  border: 1.5px dashed #d6c4ad;
+  border-radius: 20px;
+  background: rgba(255,255,255,.6);
+  text-align: center;
+}
+.itineraryEmpty span { font-size: 36px; }
+.itineraryEmpty small { color: var(--muted); }
+.removeActivity {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff0eb !important;
+  color: var(--accent-dark);
+  font-size: 21px;
+  line-height: 1;
+}
 @media (max-width: 370px) {
   .memoryGrid { grid-template-columns: 1fr; }
   .announcementForm { grid-template-columns: 1fr; }
