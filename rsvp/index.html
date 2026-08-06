@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#163d2a" />
+  <title>ทริปใหญ่ใจว้าวุ่น | RSVP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="forest-bg"></div>
+  <main class="page">
+    <section class="hero card">
+      <div class="eyebrow">YOU ARE INVITED</div>
+      <div class="leaf-divider">❧</div>
+      <h1>ทริปใหญ่<br><span>ใจว้าวุ่น</span></h1>
+      <p class="subtitle">ภารกิจรวมแก๊งเข้าป่า พักใจ และปล่อยเงินในบัญชีให้เป็นอิสระ</p>
+      <div class="trip-grid">
+        <div><small>วันเดินทาง</small><strong>3 ตุลาคม 2026</strong></div>
+        <div><small>เวลา</small><strong>06:00 น.</strong></div>
+        <div><small>สถานที่</small><strong>เขาใหญ่</strong></div>
+      </div>
+      <div class="description">ขอเชิญสมาชิกทุกท่านเข้าร่วมภารกิจ “ทริปใหญ่ใจว้าวุ่น” กรุณามาตรงเวลา เตรียมร่างกายให้พร้อม และเตรียมใจรับความมึนเมา เสียงหัวเราะ และค่าใช้จ่ายที่งอกขึ้นมาโดยไม่ทราบสาเหตุ</div>
+    </section>
+    <section class="form-card card">
+      <div class="section-heading"><span>🌿</span><div><h2>ลงชื่อตอบรับ</h2><p>กรอกชื่อแล้วเลือกสถานะของคุณ</p></div></div>
+      <form id="rsvpForm" method="POST" target="hidden_iframe">
+        <label for="name">ชื่อของคุณ</label>
+        <input id="name" name="name" type="text" placeholder="เช่น เจเจ" required />
+        <fieldset>
+          <legend>สถานะการเข้าร่วม</legend>
+          <label class="choice"><input type="radio" name="status" value="ไปแน่นอน" required /><span class="choice-box"><span class="icon">✓</span><span><b>ไปแน่นอน</b><small>พร้อมลุย ไม่เท ไม่บ่น</small></span></span></label>
+          <label class="choice"><input type="radio" name="status" value="ขอคิดดูก่อน" /><span class="choice-box"><span class="icon">?</span><span><b>ขอคิดดูก่อน</b><small>ขอเช็กเงินในบัญชีก่อน</small></span></span></label>
+          <label class="choice"><input type="radio" name="status" value="ไม่สามารถเข้าร่วม" /><span class="choice-box"><span class="icon">×</span><span><b>ไม่สามารถเข้าร่วม</b><small>ขอรอดูรูปอยู่หน้าจอ</small></span></span></label>
+        </fieldset>
+        <label for="note">หมายเหตุ <span>(ไม่บังคับ)</span></label>
+        <textarea id="note" name="note" rows="4" placeholder="เช่น ขึ้นรถที่ไหน / แพ้อาหารอะไร"></textarea>
+        <button id="submitBtn" type="submit"><span>ส่งคำตอบ</span><span>→</span></button>
+        <p class="deadline">กรุณาตอบรับภายใน 25 กันยายน 2026</p>
+      </form>
+      <div id="successMessage" class="success-message" hidden><div class="success-icon">✓</div><h3>ลงทะเบียนเรียบร้อยแล้ว</h3><p>เตรียมตัวให้พร้อม แล้วเจอกันที่เขาใหญ่ 🌲</p><button type="button" id="submitAnother">ลงชื่อคนถัดไป</button></div>
+      <iframe name="hidden_iframe" id="hidden_iframe" hidden></iframe>
+    </section>
+    <footer><p>LET'S MAKE MEMORIES TOGETHER</p></footer>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
