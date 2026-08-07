@@ -1,0 +1,59 @@
+.announcementCard {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  align-items: start;
+  margin: 24px 0 10px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: #fff2cf;
+  box-shadow: 0 8px 24px rgba(47,36,27,.08);
+  transform: rotate(-.5deg);
+}
+.announcementCard p { margin: 7px 0; line-height: 1.55; font-weight: 800; }
+.announcementCard small { color: var(--muted); }
+.announcementCard > span { font-size: 24px; }
+.announcementForm { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-bottom: 18px; }
+.announcementForm input { min-width: 0; padding: 12px 14px; }
+.announcementForm button { border: 0; border-radius: 14px; padding: 0 14px; background: var(--ink); color: white; font-weight: 900; }
+.permissionList { display: grid; gap: 10px; margin-top: 16px; }
+.permissionList label { display: flex; align-items: center; justify-content: space-between; margin: 0; padding: 12px; border: 1px solid var(--line); border-radius: 14px; }
+.permissionList input { width: 22px; height: 22px; }
+.memoryGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 4px 0 24px; }
+.polaroid { padding: 9px 9px 14px; background: white; border: 1px solid #eee6db; box-shadow: 0 10px 24px rgba(48,35,24,.13); }
+.polaroid:nth-child(odd) { transform: rotate(-2deg); }
+.polaroid:nth-child(even) { transform: rotate(2deg); }
+.polaroid > div { min-height: 128px; display: grid; place-items: center; border-radius: 3px; background: linear-gradient(145deg,#dcece7,#f0d6ae); font-size: 58px; }
+.polaroid strong { display: block; margin-top: 10px; font-size: 14px; }
+.polaroid small { color: var(--muted); }
+.memoryForm { margin-top: 8px; padding: 18px; border-radius: 22px; background: rgba(255,255,255,.75); border: 1px solid var(--line); }
+.memoryForm fieldset { margin-bottom: 18px; }
+.itineraryEmpty {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  margin: 18px 0;
+  padding: 30px 18px;
+  border: 1.5px dashed #d6c4ad;
+  border-radius: 20px;
+  background: rgba(255,255,255,.6);
+  text-align: center;
+}
+.itineraryEmpty span { font-size: 36px; }
+.itineraryEmpty small { color: var(--muted); }
+.removeActivity {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff0eb !important;
+  color: var(--accent-dark);
+  font-size: 21px;
+  line-height: 1;
+}
+@media (max-width: 370px) {
+  .memoryGrid { grid-template-columns: 1fr; }
+  .announcementForm { grid-template-columns: 1fr; }
+  .announcementForm button { padding: 12px; }
+}

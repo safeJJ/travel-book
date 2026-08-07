@@ -1,0 +1,36 @@
+.shell { min-height: 100vh; display: grid; grid-template-columns: minmax(320px,430px) minmax(260px,390px); justify-content: center; align-items: center; gap: 64px; padding: 36px; background: radial-gradient(circle at top left,#fff9ee 0,#e8dfd1 46%,#d7cbbb 100%); color: #241f1a; }
+.phone { width: 100%; min-height: 820px; padding: 24px 18px 42px; border: 10px solid #211d19; border-radius: 46px; background: #fffaf0; box-shadow: 0 28px 80px rgba(43,31,20,.25); }
+.header { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; margin-bottom: 20px; }
+.header span { color: #ce5e40; font-size: 12px; font-weight: 900; letter-spacing: .14em; }
+.header h1 { margin: 5px 0 0; font-size: 25px; }
+.back { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: white; color: inherit; text-decoration: none; box-shadow: 0 5px 16px rgba(33,29,25,.08); }
+.leaderCard,.card,.locked { margin-bottom: 14px; padding: 18px; border: 1px solid #e8dfd2; border-radius: 22px; background: white; box-shadow: 0 8px 24px rgba(47,36,27,.06); }
+.leaderCard { display: flex; gap: 13px; align-items: center; background: #fff2cf; }
+.leaderCard > span { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 15px; background: white; font-size: 25px; }
+.leaderCard small,.leaderCard strong { display: block; }
+.leaderCard small,.cardTitle small,.note,.locked small { color: #756d65; }
+.leaderCard strong { margin-top: 3px; font-size: 18px; }
+.cardTitle { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 16px; }
+.cardTitle span { font-weight: 900; }
+.cardTitle small { font-size: 11px; }
+.card label { display: grid; gap: 8px; margin-bottom: 14px; font-size: 13px; font-weight: 800; }
+.card input,.card select { width: 100%; padding: 13px 14px; border: 1.5px solid #e8dfd2; border-radius: 14px; background: #fffdf8; font: inherit; }
+.primary,.warning,.actions button,.inviteBox button { border: 0; border-radius: 14px; font: inherit; font-weight: 900; cursor: pointer; }
+.primary { width: 100%; padding: 14px; background: #ef7d5b; color: white; box-shadow: 0 6px 0 #ce5e40; }
+.warning { width: 100%; padding: 14px; background: #fff0eb; color: #b44c34; border: 1px solid #efb7a8; }
+.inviteBox { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 12px; border-radius: 15px; background: #f5ead9; }
+.inviteBox code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.inviteBox button { padding: 10px 12px; background: #241f1a; color: white; }
+.inviteBox button:disabled { opacity: .4; cursor: not-allowed; }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.actions button { padding: 12px; background: white; border: 1px solid #e8dfd2; }
+.note { margin: 12px 0 0; font-size: 12px; line-height: 1.55; }
+.locked { display: flex; gap: 12px; align-items: center; background: #f4f0ea; }
+.locked strong,.locked small { display: block; }
+.locked small { margin-top: 3px; }
+.guide { padding: 34px; border: 1px solid rgba(255,255,255,.6); border-radius: 28px; background: rgba(255,250,240,.65); backdrop-filter: blur(16px); box-shadow: 0 18px 60px rgba(54,41,28,.12); }
+.guide > span { color: #ce5e40; font-size: 12px; font-weight: 900; letter-spacing: .15em; }
+.guide h2 { margin: 10px 0 18px; font-size: 30px; }
+.guide p { color: #756d65; line-height: 1.7; }
+.guide ol { padding-left: 22px; line-height: 2; }
+@media (max-width:850px) { .shell { display:block; padding:0; background:#fffaf0; } .phone { min-height:100vh; border:0; border-radius:0; box-shadow:none; } .guide { display:none; } }
